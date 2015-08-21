@@ -1,0 +1,24 @@
+{
+    "manifest_version": 2,
+    "name": "RateSBU",
+    "version": "1.0",
+    "content_scripts": [
+        {
+            "matches": ["https://psns.cc.stonybrook.edu/psp/he90prods/*"],
+            "js": ["jquery.js", "scripts.js"]
+    }
+  ],
+
+    "permissions": [
+    "https://psns.cc.stonybrook.edu/psp/he90prods/*",
+  	"http://127.0.0.1:5000/*"
+  ],
+    "background": {
+
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "web_accessible_resources": [
+    "quality.css"
+  ]
+}
