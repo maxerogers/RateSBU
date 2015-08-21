@@ -13,22 +13,28 @@ class RateMyProf(Resource):
         return make_response(jsonify( { 'cat': 'no cute cat is implimented' } ), 200)
     def post(self):
         json_data = request.get_json(force=True)
-        if json_data:
-            generated_response_in_json = generate_response(json_data)
-            if generated_response_in_json:
-                return ({'prof': generated_response_in_json})
-        return (404, {'quality': 'no content'})
+        if json_data.get('prof'):
+            if(isinstance(json_data['prof'][0].get('names'), list)):
+                generated_response_in_json = generate_response(json_data)
+                if generated_response_in_json:
+                    return ({'prof': generated_response_in_json})
+            else:
+             return make_response(jsonify( { 'cats': 'bad cat' } ), 400)
+        else:
+             return make_response(jsonify( { 'cats': 'bad cat' } ), 400)
+
 """
 - get prof link
 - cache if name appear multiple times to avoid multiple requests
 - return quality and comments
 """
 def generate_response(data):
+    comments_flag = False
     if data:
         AllProfQuality = []
         temp_cache = {}
-        comments_flag = data['comments']
-            
+        if data.get('comments'):
+            comments_flag =data.get('comments')
         dup_name = [name.get('names') for name in data['prof']]
         dup_name = list(set([name for name in dup_name[0] if dup_name[0].count(name) > 1]))
         for name in dup_name:
@@ -47,7 +53,7 @@ def generate_response(data):
                         pid, quality = get_resources(str(name), comments_flag)
                         AllProfQuality.append({'id': _id, 'name': name , 'pid': pid, 'quality': quality})
         return AllProfQuality
-    return (404, {'quality': 'error'})
+    return make_response(jsonify( { 'quality': 'error' } ), 404)
 
 """
 - check if professor exists in ratemp site and return quality/comments
@@ -116,7 +122,7 @@ def get_student_comments(soup):
 
 @app.errorhandler(400)
 def url_not_found(error):
-    return make_response(jsonify( { 'cats': 'and dogs' } ), 400)
+    return make_response(jsonify( { 'cats': 'bad cat' } ), 400)
 
 @app.errorhandler(404)
 def url_not_found(error):
