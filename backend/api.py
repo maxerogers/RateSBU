@@ -21,13 +21,13 @@ def generate_response(data):
     if data:
         AllProfQuality = []
         temp_cache = {}
-        dup_name = [name.get('names')[0][0] for name in data['prof']]
-        dup_name = list(set([name for name in dup_name if dup_name.count(name) > 1]))
+        dup_name = [name.get('names') for name in data['prof']]
+        dup_name = list(set([name for name in dup_name[0] if dup_name[0].count(name) > 1]))
         for name in dup_name:
             temp_cache[name.replace(' ', '')] = get_resources(str(name))
         for prof in data['prof']:
             _id = prof.get('id').replace('$', '\\$')
-            for name in prof.get('names')[0]:
+            for name in prof.get('names'):
                 if name in dup_name:
                     AllProfQuality.append({'id': _id, 'name': name , 'quality': temp_cache[name.replace(' ', '')]})
                 else:

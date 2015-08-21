@@ -1,5 +1,55 @@
 $(document).ready(function () {
 
+    {
+        "prof": [
+            {
+                "id": "MTG_INSTR\\$0",
+                "name": "A",
+                "quality": [
+                    {
+                        "AverageGrade": "N/A",
+                        "Clarity": "2.4",
+                        "Easiness": "4.2",
+                        "Helpfulness": "2.8",
+                        "Hotness": "http://www.ratemyprofessors.com/assets/chilis/cold-chili.png",
+                        "OverallQuality": "2.6",
+                        "tid": "780346"
+                },
+                    {
+                        "comments": [
+                            {
+                                "class": "HUI 336",
+                                "comment": "She's really into what she teaches. She raves how she reads 4 newspapers a day. Every class she'll play music or bring in an object to show. Makes you read ALOT of useless handouts that she never test you on. You write 3 essays and a final paper, the assignments/papers are never clear. She's not a bad teacher, she just needs more of a real life.",
+                                "date": "12/14/2005"
+                        },
+                            {
+                                "class": "HUI 336",
+                                "comment": "She's really into what she teaches. She raves how she reads 4 newspapers a day. Every class she'll play music or bring in an object to show. Makes you read ALOT of useless handouts that she never test you on. You write 3 essays and a final paper, the assignments/papers are never clear. She's not a bad teacher, she just needs more of a real life.",
+                                "date": "12/14/2005"
+                        },
+                            {
+                                "class": "HUI 336",
+                                "comment": "She's really into what she teaches. She raves how she reads 4 newspapers a day. Every class she'll play music or bring in an object to show. Makes you read ALOT of useless handouts that she never test you on. You write 3 essays and a final paper, the assignments/papers are never clear. She's not a bad teacher, she just needs more of a real life.",
+                                "date": "12/14/2005"
+                        },
+                            {
+                                "class": "HUI 336",
+                                "comment": "She's really into what she teaches. She raves how she reads 4 newspapers a day. Every class she'll play music or bring in an object to show. Makes you read ALOT of useless handouts that she never test you on. You write 3 essays and a final paper, the assignments/papers are never clear. She's not a bad teacher, she just needs more of a real life.",
+                                "date": "12/14/2005"
+                        },
+                            {
+                                "class": "HUI 336",
+                                "comment": "She's really into what she teaches. She raves how she reads 4 newspapers a day. Every class she'll play music or bring in an object to show. Makes you read ALOT of useless handouts that she never test you on. You write 3 essays and a final paper, the assignments/papers are never clear. She's not a bad teacher, she just needs more of a real life.",
+                                "date": "12/14/2005"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+    }
+
+
     //check to see if we are in "Search for Classes" page
     $('#ptifrmtgtframe').load(function () {
         var iframe = $('#ptifrmtgtframe').contents();
@@ -42,17 +92,16 @@ function getInstructors() {
     // find if any professor list exist and collect them into a list
     var jsonArray = [];
     iframe.find('span[id*="MTG_INSTR"]').each(function () {
-        var name = [];
         var item = {};
         var profName = $(this).text().replace(/<br>|\n/g, "").split(', ');
         if (profName && profName != "Staff") {
             item['id'] = $(this).attr("id");
-            name.push(profName);
-            item['names'] = name;
+            item['names'] = profName;
             jsonArray.push(item);
         }
     });
     if (jsonArray.length > 0) {
+        console.log(JSON.stringifyjsonArray);
         $.each(jsonArray, function (index, value) {
             var name = value.names[0].toString().replace(/\s+/g, '');
             var obj = [];
@@ -84,7 +133,7 @@ function getResponse(p_data, callback) {
 
 function parseResponse(p_data) {
     var iframe = $('#ptifrmtgtframe').contents();
-    //load custom css and append to iframe head
+    //load custom css and append to iframe's head
     var path = chrome.extension.getURL('quality.css');
     $(iframe.find('head')).append($('<link>')
         .attr("rel", "stylesheet")
