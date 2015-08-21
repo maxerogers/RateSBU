@@ -12,6 +12,7 @@ class RateMyProf(Resource):
     def get(self):
         return make_response(jsonify( { 'cat': 'no cute cat is implimented' } ), 200)
     def post(self):
+        print(request.method)
         json_data = request.get_json(force=True)
         generated_response_in_json = generate_response(json_data)
         if generated_response_in_json:
