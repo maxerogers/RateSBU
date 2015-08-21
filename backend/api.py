@@ -13,11 +13,11 @@ class RateMyProf(Resource):
         return make_response(jsonify( { 'cat': 'no cute cat is implimented' } ), 200)
     def post(self):
         json_data = request.get_json(force=True)
-        generated_response_in_json = generate_response(json_data)
-        if generated_response_in_json:
-            return ({'prof': generated_response_in_json})
-        return ({'quality': 'no content'})
-    
+        if json_data:
+            generated_response_in_json = generate_response(json_data)
+            if generated_response_in_json:
+                return ({'prof': generated_response_in_json})
+        return (404, {'quality': 'no content'})
 """
 - get prof link
 - cache if name appear multiple times to avoid multiple requests
@@ -35,16 +35,19 @@ def generate_response(data):
             temp_cache[name.replace(' ', '')] = get_resources(str(name), comments_flag)
 
         for prof in data['prof']:
-            _id = prof.get('id').replace('$', '\\$')
+            _id = prof.get('id')
+            if _id:
+                _id = _id.replace('$', '\\$')
             for name in prof.get('names'):
-                if name in dup_name:
-                    get_from_cache = temp_cache[name.replace(' ', '')]
-                    AllProfQuality.append({'id': _id, 'name': name ,'pid': get_from_cache[0] ,'quality': get_from_cache[1]})
-                else:
-                    pid, quality = get_resources(str(name), comments_flag)
-                    AllProfQuality.append({'id': _id, 'name': name , 'pid': pid, 'quality': quality})
+                if name:
+                    if name in dup_name:
+                        get_from_cache = temp_cache[name.replace(' ', '')]
+                        AllProfQuality.append({'id': _id, 'name': name ,'pid': get_from_cache[0] ,'quality': get_from_cache[1]})
+                    else:
+                        pid, quality = get_resources(str(name), comments_flag)
+                        AllProfQuality.append({'id': _id, 'name': name , 'pid': pid, 'quality': quality})
         return AllProfQuality
-    return {'quality': 'error'}
+    return (404, {'quality': 'error'})
 
 """
 - check if professor exists in ratemp site and return quality/comments
@@ -119,7 +122,7 @@ def url_not_found(error):
 def url_not_found(error):
     return make_response(jsonify( { 'cat': 'meow' } ), 404)
 
-api.add_resource(RateMyProf, '/', endpoint='/prof')
+api.add_resource(RateMyProf, '/')
         
 if __name__ == '__main__':
     app.run(debug = True)
