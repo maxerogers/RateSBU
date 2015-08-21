@@ -37,7 +37,6 @@ function passThrough() {
 function getInstructors() {
     //find the iframe that is loaded
     var iframe = $('#ptifrmtgtframe').contents();
-
     // find if any professor list exist and collect them into a list
     var jsonArray = [];
     iframe.find('span[id*="MTG_INSTR"]').each(function () {
@@ -56,8 +55,10 @@ function getInstructors() {
             var obj = [];
             obj.push(value);
             var tempJson = JSON.stringify({
+                'comments': false,
                 'prof': obj
             });
+            console.log(tempJson);
             getResponse(tempJson, function (professors) {
                 parseResponse(JSON.parse(professors));
             });
@@ -92,6 +93,7 @@ function parseResponse(p_data) {
     if (p_data.prof.length > 0) {
         $.each(p_data.prof, function (index, item) {
             var id = item.id.toString();
+            var pid = item.pid;
             var name = item.name;
             var quality = item.quality[0];
             var parentDiv = iframe.find('#win0div' + id);
@@ -102,8 +104,8 @@ function parseResponse(p_data) {
             }
             if (quality) {
                 //add it back with info
-                if (!parentDiv.find("#" + quality.tid).attr('id')) {
-                    parentDiv.append('<a class="nostyle" href="http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + quality.tid + '" target="_blank" title="Click to view in Rate My Professor website"><div id="' + quality.tid + '" class="wrap-quality"><div id="prof-quality"><div id="prof-name">' + name + '</div><div class="prof-avg-quality"><div id="prof-overallQuality">' + quality.OverallQuality + '</div><div id="prof-averagegrade">' + quality.AverageGrade + '</div><div id="prof-hotness"><img class="prof-hot" src="' + quality.Hotness + '" alt="cat?" height="100%" width="100%"></div></div><div class="prof-rate"><div id="prof-helpfulness">' + quality.Helpfulness + '</div><div id="prof-clarity">' + quality.Clarity + '</div><div id="prof-easiness">' + quality.Easiness + '</div></div></div></div></a>');
+                if (!parentDiv.find("#" + pid).attr('id')) {
+                    parentDiv.append('<a class="nostyle" href="http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + pid + '" target="_blank" title="Click to view in Rate My Professor website"><div id="' + pid + '" class="wrap-quality"><div id="prof-quality"><div id="prof-name">' + name + '</div><div class="prof-avg-quality"><div id="prof-overallQuality">' + quality.OverallQuality + '</div><div id="prof-averagegrade">' + quality.AverageGrade + '</div><div id="prof-hotness"><img class="prof-hot" src="' + quality.Hotness + '" alt="cat?" height="100%" width="100%"></div></div><div class="prof-rate"><div id="prof-helpfulness">' + quality.Helpfulness + '</div><div id="prof-clarity">' + quality.Clarity + '</div><div id="prof-easiness">' + quality.Easiness + '</div></div></div></div></a>');
                 }
             } else {
                 if (!parentDiv.find('#prof-quality').attr('id')) {

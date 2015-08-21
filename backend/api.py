@@ -12,31 +12,45 @@ class RateMyProf(Resource):
     def get(self):
         return make_response(jsonify( { 'cat': 'no cute cat is implimented' } ), 200)
     def post(self):
-        print(request.method)
         json_data = request.get_json(force=True)
         generated_response_in_json = generate_response(json_data)
         if generated_response_in_json:
             return ({'prof': generated_response_in_json})
         return ({'quality': 'no content'})
+    
+"""
+- get prof link
+- cache if name appear multiple times to avoid multiple requests
+- return quality and comments
+"""
 def generate_response(data):
     if data:
         AllProfQuality = []
         temp_cache = {}
+        comments_flag = data['comments']
+            
         dup_name = [name.get('names') for name in data['prof']]
         dup_name = list(set([name for name in dup_name[0] if dup_name[0].count(name) > 1]))
         for name in dup_name:
-            temp_cache[name.replace(' ', '')] = get_resources(str(name))
+            temp_cache[name.replace(' ', '')] = get_resources(str(name), comments_flag)
+
         for prof in data['prof']:
             _id = prof.get('id').replace('$', '\\$')
             for name in prof.get('names'):
                 if name in dup_name:
-                    AllProfQuality.append({'id': _id, 'name': name , 'quality': temp_cache[name.replace(' ', '')]})
+                    get_from_cache = temp_cache[name.replace(' ', '')]
+                    AllProfQuality.append({'id': _id, 'name': name ,'pid': get_from_cache[0] ,'quality': get_from_cache[1]})
                 else:
-                    AllProfQuality.append({'id': _id, 'name': name , 'quality': get_resources(str(name))})
+                    pid, quality = get_resources(str(name), comments_flag)
+                    AllProfQuality.append({'id': _id, 'name': name , 'pid': pid, 'quality': quality})
         return AllProfQuality
     return {'quality': 'error'}
-      
-def get_resources(name):
+
+"""
+- check if professor exists in ratemp site and return quality/comments
+"""
+def get_resources(name, comments_flag):
+    overallQuality = []
     base_url = "http://www.ratemyprofessors.com"
     url = (base_url + "/search.jsp?queryBy=teacherName&schoolName=stony+brook+university+suny&queryoption=HEADER&query="+str(name).replace(" ","%20"))
     try:
@@ -46,15 +60,22 @@ def get_resources(name):
         if get_matched_link:
             soup = BeautifulSoup(urllib2.urlopen(base_url + get_matched_link.group(1)).read(), 'lxml')
             tid = get_matched_link.group(1).split("=")[-1]
-            return get_prof_quality(soup, tid)
+            quality_c = get_prof_quality(soup)
+            if quality_c:
+                overallQuality.append(quality_c)
+            if comments_flag:
+                overallQuality.append({'comments': get_student_comments(soup)})
+            return (tid, overallQuality)
         else:
-            return {"quality": 'link not found'}
+            return (404, {"quality": 'link not found'})
     except Exception, detail: 
         print "Error", detail 
-
-def get_prof_quality(soup, tid):
+        
+"""
+- get professor's quality i.e helpfulness / average grading
+"""
+def get_prof_quality(soup):
     if soup: 
-        overallQuality = []
         quality = {}
         for div in soup.select('div.breakdown-header'):
             quality_title = ''.join(div.contents[0].split())
@@ -67,15 +88,14 @@ def get_prof_quality(soup, tid):
             label = div.find('div', {'class': 'label'}).text
             rating = div.find('div', {'class': 'rating'}).text
             quality[label] = rating
-        quality['tid'] = tid
-        overallQuality.append(quality) 
-        comments = get_student_comments(soup)
-        if comments and overallQuality:
-            overallQuality.append({'comments': comments})
-            return overallQuality
-        return {'quality': 'no quality'}
-    return {'quality': 'invalid soup'}
-    
+        if quality:
+            return quality
+        return (404, {'quality': 'no quality'})
+    return (404, {'quality': 'invalid soup'})
+
+"""
+- get student comments from professor profile
+"""
 def get_student_comments(soup):
     allComments = []
     comments_d = {}
